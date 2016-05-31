@@ -401,7 +401,8 @@ class SearchEngine(object):
         return search_results[:n_results]
 
     def count(self):
-        """Return number of objects already in the index.
+        """Return number of objects a
+        eady in the index.
         Returns:
           int: Number of documents indexed.
         """

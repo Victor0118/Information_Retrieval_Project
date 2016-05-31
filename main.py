@@ -1,26 +1,26 @@
-"""lyric search engine.
+"""word search engine.
 
-This module executes a simple search for lyrics given a term-based query. The
+This module executes a simple search for words given a term-based query. The
 query is capture from STDIN and executed on an indexed data structure
-containing lyrics' information. The result is displayed on STDOUT and outputs
+containing words' information. The result is displayed on STDOUT and outputs
 the top 10 matches ordered by their tf*idf scores.
 
 Example:
-    $ python lyric_index.py --data './lrc'
+    $ python word_index.py --data './lrc'
 
-    lyric_index Loading lyrics...
-    lyric Loading lyrics from file...
+    word_index Loading words...
+    word Loading words from file...
     search Start search engine (Indexing | Ranking)...
     search Vocabulary assembled with terms count 230885
     search Starting tf computation...
     search Starting tf-idf computation...
     search Starting tf-idf norm computation...
     search Building index...
-    search Function = load_lyrics, Time = 406.88 sec
-    lyric_index Done loading lyrics, 5478 docs in index
+    search Function = load_words, Time = 406.88 sec
+    word_index Done loading words, 5478 docs in index
 
     Enter a query, or hit enter to quit: burn
-    util : Function = search_lyrics, Time = 0.01 sec
+    util : Function = search_words, Time = 0.01 sec
     score: 0.553258, indexable: id: 5255, title: Burn, singer: Usher
     score: 0.230353, indexable: id: 1614, title: Still Breathing, singer: duran duran
     score: 0.206084, indexable: id: 2882, title: Who We Are, singer: Lifehouse
@@ -37,8 +37,8 @@ Example:
 import sys
 import optparse
 import logging
-sys.path.append('./lrc')
-import lyric
+sys.path.append('./Reuters')
+import word
 
 DEBUG = True
 
@@ -48,14 +48,14 @@ log_format = '%(asctime)s - %(levelname)s - %(module)s : %(lineno)d - %(message)
 logging.basicConfig(level=log_level, format=log_format)
 logger = logging.getLogger(__name__)
 
-CATALOG_FILENAME = './lrc'
+CATALOG_FILENAME = 'Reuters'
 
 
 def execute_search(data_location):
     """Capture query from STDIN and display the result on STDOUT.
 
     The query of terms is executed against an indexed data structure
-    containing lyrics' information. If not result is found, an warning message
+    containing words' information. If not result is found, an warning message
     will notify the user of such situation.
 -[ ]
     Args:
@@ -63,32 +63,34 @@ def execute_search(data_location):
 
     """
     query = None
-    repository = lyric.lyricInventory(data_location)
+    repository = word.wordInventory(data_location)
     logger.info('Loading...')
 
-    repository.load_lyrics()
-    docs_number = repository.lyrics_count()
-    logger.info('Done loading lyrics, %d docs in index', docs_number)
+    repository.load_words()
+    docs_number = repository.words_count()
+    logger.info('Done loading words, %d docs in index', docs_number)
 
-    choice = raw_input('Please choose to search lyrics(enter 1) or song info(enter 2) :')
+    # choice = raw_input('Please choose to search words(enter 1) or song info(enter 2) :')
 
-    if choice == '1':
-        while query is not '':
-            query = raw_input('Enter a query, or hit enter to quit: ')
-            search_results = repository.search_lyrics(query)
+    # if choice == '1':
+        # while query is not '':
+    print '============================================================='
+    
+    query = raw_input('Enter a query, or hit enter to quit: ')
+    search_results = repository.search_words(query)
 
-            print search_results
+    print search_results
 
-    elif choice == '2':
-        while query is not '':
-            query = raw_input('Enter a query, or hit enter to quit: ')
-            search_results = repository.search_info(query)
+    # elif choice == '2':
+    #     while query is not '':
+    #         query = raw_input('Enter a query, or hit enter to quit: ')
+    #         search_results = repository.search_info(query)
 
-            print search_results
+    #         print search_results
 
-    else:
-        print 'choice error'
-        exit()
+    # else:
+    #     print 'choice error'
+    #     exit()
 
 
 if __name__ == '__main__':
