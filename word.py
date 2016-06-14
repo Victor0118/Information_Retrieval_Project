@@ -11,21 +11,21 @@ logger = logging.getLogger(__name__)
 
 class Word(Indexable):
     """Class encapsulating a specific behavior of indexed songs.
-        
+
         Args:
         iid (int): Identifier of indexable objects.
         title (str): Title of the song  .
         singer (str): singer of the song.
         word (str): Word of the song.
         metadata (str): Plain text with data to be indexed.
-        
+
         Attributes:
         title (str): Title of the song
         singer (str): singer of the song
         word (str): Word of the song
-        
+
         """
-    
+
     # def __init__(self, iid, title, singer, word):
     def __init__(self, iid, word):
         Indexable.__init__(self, iid, word)
@@ -33,7 +33,7 @@ class Word(Indexable):
         # self.singer = singer
         self.word = word
 
-    
+
     # def __repr__(self):
     #     return 'id: %s, title: %s, singer: %s' % \
     #         (self.iid, self.title, self.singer)
@@ -91,10 +91,11 @@ class wordInventory(object):
         """
         logger.info('Loading words from file...')
         iid =  1
-        for parent,dirnames,fnames in os.walk(self.filename):  
+        for parent,dirnames,fnames in os.walk(self.filename):
                 for fname in fnames:
                     fname2 = './Reuters/' + fname
-                    word = open(fname2).read().strip()
+                    print fname
+                    word = open(fname2).read()
                     # temp = fname.rstrip('.html').split('-')
                     # if len(temp)<=1:
                         # continue
@@ -108,7 +109,7 @@ class wordInventory(object):
                     self.engine.add_object(wordobject)
                     # self.engine2.add_object(songobject)
                     iid+=1
-            
+
         self.engine.start()
         # self.engine2.start()
         self.saveToFile()
