@@ -5,6 +5,7 @@ import os.path
 from util import timed
 from search import Indexable
 from search import SearchEngine
+from checkSpelling import checkSpelling
 import pickle
 
 logger = logging.getLogger(__name__)
@@ -132,7 +133,9 @@ class wordInventory(object):
 
         """
         result = ''
+        dictionary = self.engine.index.term_index.keys()
         if len(query) > 0:
+            checkSpelling(query, dictionary)
             result = self.engine.search(query, n_results)
             print result
 
