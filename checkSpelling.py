@@ -22,9 +22,10 @@ def checkSpelling(query, dictionary):
 	if query not in dictionary:
 		minDist = len(query)+10
 		for word in dictionary:
-			dist = editDistanceCalc(query, word)
-			if dist < minDist:
-				minDist = dist
-				correctedWord = word
+			if word[0]==query[0]:
+				dist = editDistanceCalc(query, word)
+				if dist < minDist:
+					minDist = dist
+					correctedWord = word
 		print 'Did you mean '+correctedWord+' ?'
 
