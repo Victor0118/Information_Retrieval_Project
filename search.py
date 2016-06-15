@@ -337,12 +337,12 @@ class Index(object):
             # compute intersection between results
             # there is room for improvements in this part of the code
             docs_with_term = self.term_index[term]
-            print docs_with_term
+            #print docs_with_term
             if term_index-num_stop_word == 0:
                 docs_indices = docs_with_term
             else:
                 docs_indices = set(docs_indices) & set(docs_with_term)
-        print "debuging:docs_indices",list(docs_indices)
+        print "debug info in search_terms",term,":",list(docs_indices)
 
         return list(docs_indices)
 
@@ -482,12 +482,50 @@ class SearchEngine(object):
                     terms.insert(term_index,tt[0])
                     terms.insert(term_index+1,branket)
                     terms.insert(term_index+2,tt[1])
-        print "debug info:",terms
-
+        newterms = []
+        if len(terms) > 1:
+            nextt = ""
+            cnt=0
+            first=1
+            for t_index,t in enumerate(terms):
+                if t_index+1 < len(terms):
+                    nextt = terms[t_index+1]
+                else:
+                    nextt=""
+                if t!='and' and t!='or'and t!='not'and t!='('and t!=')':
+                    if nextt!='and' and nextt!='or'and nextt!='not'and nextt!='('and nextt!=')' and nextt!="":
+                        if first==0:
+                            newterms.append('and')
+                        newterms.append(t+'_'+nextt)
+                        first=0
+                    else:
+                        if(first!=0):
+                            newterms.append(t)
+                        first=1
+                        
+                        
+                else:
+                    newterms.append(t)
+                    
+            terms=newterms
+                #print t_index,terms[t_index]
+           
+        print "debug info in search_bool:",terms
+    
         expRoot=parser(terms).parse()
         #docs_indiex = self.index.search_terms(term)
-        #expRoot.printout()
-        search_results = expRoot.calc(self.index,self.count())
+        search_results = []
+        if expRoot!=None:
+            #expRoot.printout()
+            docs_indices = expRoot.calc(self.index,self.count())
+            
+            for doc_index in docs_indices:
+                indexable = self.objects[doc_index]
+                doc_score = self.rank.compute_rank(doc_index, terms)
+                result = IndexableResult(doc_score, indexable)
+                search_results.append(result)
+
+            search_results.sort(key=lambda x: x.score, reverse=True)
         return search_results[:n_results]
 
 
@@ -550,7 +588,7 @@ class exprNode(object):
             return list(res)
         else:
             res=index.search_terms(self.op_value.split())
-            print "debug info:",self.op_value.split(),res
+            #print "debug info:",self.op_value.split(),res
             return res
 class parser(object):
     '''parse bool expression'''
@@ -561,14 +599,16 @@ class parser(object):
     def parse(self):
         return self.exp()
     def match(self,expectedToken):
-        token=self.terms[self.i]
-        if token==expectedToken:
-            self.i=self.i+1
-            if(self.i!=len(self.terms)):
-                self.token=self.terms[self.i]
-            return exprNode(token)
-        else:
+        #token=self.terms[self.i]
+        if self.token==expectedToken:           
+            res= exprNode( self.token)
+        else:           
             print 'systax error error',token
+            res=None
+        self.i=self.i+1
+        if(self.i<len(self.terms)):
+            self.token=self.terms[self.i]
+        return res
     def factor(self):
         if(self.token=='not'):
             op=self.match('not')
@@ -586,9 +626,12 @@ class parser(object):
             return self.words()
     def words(self):
         tokenlist=[]
-        while(self.token!='(' and self.token !=')' and self.token !='and' and self.token != 'or' and self.token!='not'):
+        if(self.token!='(' and self.token !=')' and self.token !='and' and self.token != 'or' and self.token!='not'):
             '''for single word'''
             return self.match(self.token)#one words
+        else:
+            print "syntax error",self.token
+            return ""
             '''for multiple words query
             tokenlist.append(self.token)
             self.match(self.token)
@@ -596,14 +639,14 @@ class parser(object):
     def term(self):
         left=self.factor()
         while self.token=='and':
-            op=self.match(self.token )
+            op=self.match('and' )
             right=self.factor()
             left=op.linkNode(left, right)
         return left
     def exp(self):
         left=self.term()
         while(self.token=='or'):
-            op=self.match(self.token)
+            op=self.match('or')
             right=self.term()
             left=op.linkNode(left, right)
         return left
