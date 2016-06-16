@@ -6,7 +6,7 @@ import logging
 from collections import defaultdict
 from token import RIGHTSHIFTEQUAL
 from Tkconstants import LEFT
-
+from checkSpelling import checkSpelling
 
 logger = logging.getLogger(__name__)
 
@@ -419,16 +419,20 @@ class SearchEngine(object):
 
         """
         terms = query.lower().split()
+        dictionary = self.index.term_index.keys()
         newterms = []
         if len(terms) > 1:
             lastt = ""
             for t in terms:
+                checkSpelling(t, dictionary)
                 if lastt == "":
                     lastt = t
                     continue
                 newterms.append(lastt+'_'+t)
                 lastt = t
             terms = newterms
+        else:
+            checkSpelling(terms[0], dictionary)
         docs_indices = self.index.search_terms(terms)
         search_results = []
 

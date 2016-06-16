@@ -133,9 +133,9 @@ class wordInventory(object):
 
         """
         result = ''
-        dictionary = self.engine.index.term_index.keys()
+        # dictionary = self.engine.index.term_index.keys()
         if len(query) > 0:
-            checkSpelling(query, dictionary)
+            # checkSpelling(query, dictionary)
             result = self.engine.search(query, n_results)
             print result
 
