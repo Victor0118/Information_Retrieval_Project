@@ -457,6 +457,7 @@ class SearchEngine(object):
           list of  docs indexes
         """
         terms=query.lower().split()
+        dictionary = self.index.term_index.keys()
         #dealing with branket
         for term_index,term in enumerate(terms):
             branket=''
@@ -492,6 +493,7 @@ class SearchEngine(object):
             cnt=0
             first=1
             for t_index,t in enumerate(terms):
+                checkSpelling(t, dictionary)
                 if t_index+1 < len(terms):
                     nextt = terms[t_index+1]
                 else:
@@ -510,10 +512,11 @@ class SearchEngine(object):
                         
                 else:
                     newterms.append(t)
-                    
+            
             terms=newterms
                 #print t_index,terms[t_index]
-           
+        else:
+            checkSpelling(terms[0], dictionary)
         print "debug info in search_bool:",terms
     
         expRoot=parser(terms).parse()
