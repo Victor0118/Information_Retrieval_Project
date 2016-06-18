@@ -3,6 +3,7 @@ import numpy as np
 import scipy.sparse as sp
 import scipy.sparse.sparsetools as sptools
 import logging
+import synonym as sy
 from collections import defaultdict
 from token import RIGHTSHIFTEQUAL
 from Tkconstants import LEFT
@@ -34,6 +35,12 @@ class Indexable(object):
     def __init__(self, iid, metadata):
         self.iid = iid
         self.words_count = defaultdict(int)
+
+        # markFixWordList = sy.markDelete(metadata)
+
+        # stemmedwordslist = sy.stemminglist(markFixWordList)
+
+        # print stemmedwordslist
 
         lastword = ""
         for word in metadata.split():
@@ -158,6 +165,7 @@ class TfidfRank(object):
         self.smoothing = smoothing
         self.stop_words = stop_words
         self.vocabulary = {}
+        self.vocabulary_withoutsynword = {}
         self.ft_matrix = []
         self.ifd_diag_matrix = []
         self.tf_idf_matrix = []
@@ -191,6 +199,24 @@ class TfidfRank(object):
                 word_index_in_vocabulary = self.vocabulary[word]
                 doc_word_count = indexable.count_for_word(word)
                 ft_matrix[index, word_index_in_vocabulary] = doc_word_count
+
+        # Add synword's idf
+
+        for word in self.vocabulary_withoutsynword.keys():
+            for synword in sy.synonymwords(word)[0:4]:
+                word_index_in_vocabulary = self.vocabulary[word]
+                synword_index_in_vocabulary = self.vocabulary[synword]
+                if synword not in self.vocabulary_withoutsynword.keys():
+                    #print "origin word: ", word," synword: ",synword
+                    ft_matrix[:,synword_index_in_vocabulary] = ft_matrix[:,word_index_in_vocabulary]
+                elif synword != word:
+                    newmatrix1 = 0.6*ft_matrix[:,word_index_in_vocabulary]+0.4*ft_matrix[:,synword_index_in_vocabulary]
+                    newmatrix2 = 0.4*ft_matrix[:,word_index_in_vocabulary]+0.6*ft_matrix[:,synword_index_in_vocabulary]
+                    ft_matrix[:,word_index_in_vocabulary] = newmatrix1
+                    ft_matrix[:,synword_index_in_vocabulary] = newmatrix2
+
+
+
         self.ft_matrix = ft_matrix.tocsc()
 
         logger.info('Starting tf-idf computation...')
@@ -247,6 +273,24 @@ class TfidfRank(object):
                 if word not in self.vocabulary:
                     self.vocabulary[word] = vocabulary_index
                     vocabulary_index += 1
+
+
+        # Backup origin vocabulary
+        self.vocabulary_withoutsynword = self.vocabulary.copy()
+        #print "before: 1:",len(self.vocabulary_withoutsynword)," 2: ",len(self.vocabulary)
+        # Add synword if it is not in vocabulary
+        for word in self.vocabulary_withoutsynword.keys():
+            for synword in sy.synonymwords(word)[0:4]:
+                if synword not in self.vocabulary.keys():
+                    self.vocabulary[synword] = vocabulary_index
+                    #print "word: ", word, "synword: ", synword, ", index: ", vocabulary_index
+                    vocabulary_index += 1
+
+
+        #print "after: 1:",len(self.vocabulary_withoutsynword)," 2: ",len(self.vocabulary)
+
+
+
 
     def compute_rank(self, doc_index, terms):
         """Compute tf-idf score of an indexed document.
@@ -310,6 +354,33 @@ class Index(object):
                 # build dictionary where term is the key and an array
                 # of the IDs of indexable object containing the term
                 self.term_index[word].append(position)
+
+        # sy.syndictionary = sy.buildSyn(self.term_index.keys())
+        # sy.saveToFile()
+
+        for word in self.term_index.keys():
+            for synword in sy.synonymwords(word)[0:4]:
+                if synword not in self.term_index.keys():
+                    self.term_index[synword] = self.term_index[word]
+                elif synword != word:
+                    list1 = self.term_index[synword]
+                    list2 = self.term_index[word]
+                    self.term_index[word].extend(list2)
+                    self.term_index[synword].extend(list1)
+                    newlist1 = []
+                    for iid in self.term_index[word]:
+                        if iid not in newlist1:
+                            newlist1.append(iid)
+                    self.term_index[word] = newlist1
+
+                    newlist2 = []
+                    for iid in self.term_index[synword]:
+                        if iid not in newlist2:
+                            newlist2.append(iid)
+                    self.term_index[synword] = newlist2
+
+
+
 
     def search_terms(self, terms):
         """Search for terms in indexed documents.
@@ -419,6 +490,7 @@ class SearchEngine(object):
 
         """
         terms = query.lower().split()
+        # terms = sy.stemminglist(terms)
         dictionary = self.index.term_index.keys()
         newterms = []
         if len(terms) > 1:
@@ -457,6 +529,7 @@ class SearchEngine(object):
           list of  docs indexes
         """
         terms=query.lower().split()
+        # terms = sy.stemminglist(terms)
         dictionary = self.index.term_index.keys()
         #dealing with branket
         for term_index,term in enumerate(terms):
