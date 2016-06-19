@@ -116,7 +116,7 @@ class wordInventory(object):
         self.saveToFile()
 
     @timed
-    def search_words(self, query, n_results=10,choice=2):
+    def search_words(self, query, n_results=10,choice=2,SYSNONYM=False):
         """Search words according to provided query of terms.
 
         The query is executed against the indexed words, and a list of words
@@ -138,11 +138,11 @@ class wordInventory(object):
             # checkSpelling(query, dictionary)
             parent,dirnames,fnames = list(os.walk(self.filename))[0]
             if choice == 1:
-                result = self.engine.search_bool(query, n_results)
+                result = self.engine.search_bool(query, n_results,SYSNONYM)
                 for res in result:
                     print res," ",fnames[res-1]
             elif choice == 2:
-                result = self.engine.search(query, n_results)
+                result = self.engine.search(query, n_results,SYSNONYM)
                 for res in result:
                     print res.indexable.iid," ",fnames[res.indexable.iid-1]," ",res.score
             # print len(list(os.walk(self.filename)))

@@ -41,7 +41,7 @@ sys.path.append('./Reuters')
 import word
 
 DEBUG = True
-SYSNONYM =False
+
 # Log initialization
 log_level = logging.DEBUG if DEBUG else logging.INFO
 log_format = '%(asctime)s - %(levelname)s - %(module)s : %(lineno)d - %(message)s'
@@ -88,24 +88,24 @@ def execute_search(data_location):
         if choice == '':
              continue
         choice = int(choice)
-        global SYSNONYM
+        
         if choice == 1:
-            choice=raw_input('Do you want to add sysnonym search?(y/n)')
-            if(choice=='y' or choice=='Y'):
+            synchoice=raw_input('Do you want to add sysnonym search?(y/n)')
+            if(synchoice=='y' or synchoice=='Y'):
                 SYSNONYM=True
                 print "You have chosen sysnonym search"
-            elif(choice=='n'or choice=='N'):
+            elif(synchoice=='n'or synchoice=='N'):
                 SYSNONYM=False
                 print "You have canceled sysnonym search"
             else:
                 SYSNONYM=False
                 print "input error. default: no sysnonym search"          
         elif choice == 2:
-            choice=raw_input('Do you want to add sysnonym search?(y/n)')
-            if(choice=='y' or choice=='Y'):
+            synchoice=raw_input('Do you want to add sysnonym search?(y/n)')
+            if(synchoice=='y' or synchoice=='Y'):
                 SYSNONYM=True
                 print "You have chosen sysnonym search"
-            elif(choice=='n'or choice=='N'):
+            elif(synchoice=='n'or synchoice=='N'):
                 SYSNONYM=False
                 print "You have canceled sysnonym search"
             else:
@@ -117,7 +117,8 @@ def execute_search(data_location):
             print "input error"
         print '============================================================='
         query = raw_input('Enter a query, or hit enter to quit: ')
-        search_results = repository.search_words(query,choice = choice)
+        
+        search_results = repository.search_words(query,choice = choice,SYSNONYM=SYSNONYM)
    
 
 

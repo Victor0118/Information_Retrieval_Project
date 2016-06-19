@@ -17,7 +17,7 @@ originword=set()
 STOP_WORDS_FILENAME = 'stop_words.txt'
 
 DEBUG=main.DEBUG
-SYSNONYM=main.SYSNONYM
+
 class Indexable(object):
     """Class representing an object that can be indexed.
 
@@ -478,7 +478,7 @@ class SearchEngine(object):
         self.index.build_index(self.objects)
         self.rank.build_rank(self.objects)
 
-    def search(self, query, n_results=10):
+    def search(self, query, n_results=10,SYSNONYM=False):
         """Return indexed documents given a query of terms.
 
         Assumptions:
@@ -512,7 +512,6 @@ class SearchEngine(object):
         
         termslist=[]
 
-        SYSNONYM=main.SYSNONYM
         print SYSNONYM
 
         if(SYSNONYM==False):
@@ -575,7 +574,7 @@ class SearchEngine(object):
         return search_results[:n_results]
 
 
-    def search_bool(self,query,n_results=10):
+    def search_bool(self,query,n_results=10,SYSNONYM=False):
         """return all documents that satisfy the demand given a bool expression
         Assumptions:
             1)we take 'and'_'or'_'not' as conjunction word
@@ -622,7 +621,7 @@ class SearchEngine(object):
        
         originterms=terms
         
-        SYSNONYM=main.SYSNONYM
+       
         print SYSNONYM
         termslist=[]
         if(SYSNONYM==False):
