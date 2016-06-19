@@ -93,7 +93,7 @@ def execute_search(data_location):
             print "input error"
         print '============================================================='
         query = raw_input('Enter a query, or hit enter to quit: ')
-        search_results = repository.search_words(query,choice)
+        search_results = repository.search_words(query,choice = choice)
    
 
 
