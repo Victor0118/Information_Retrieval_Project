@@ -617,7 +617,10 @@ class SearchEngine(object):
                 nextt = ""
                 cnt=0
                 first=1
-                for t_index,t in enumerate(terms):                  
+
+              
+                for t_index,t in enumerate(terms):
+
                     if t_index+1 < len(terms):
                         nextt = terms[t_index+1]
                     else:
@@ -639,9 +642,11 @@ class SearchEngine(object):
                 
                 terms=newterms
                     #print t_index,terms[t_index]
+
             #else:
                 # print  "check :",t
                 # checkSpelling(terms[0], originword)
+
             print "debug info in search_bool:",terms
         
             expRoot=parser(terms).parse()
