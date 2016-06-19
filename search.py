@@ -511,14 +511,8 @@ class SearchEngine(object):
 
         
         termslist=[]
-
-       
-
-        if(SYSNONYM==False):
-            if(DEBUG):
-                print 'no sysnonym'
-            termslist.append(terms)
-        else:       
+        termslist.append(terms)        
+        if(SYSNONYM):       
             #add sysnon termlist
             if(DEBUG):
                 print 'add sysnonym'
@@ -624,9 +618,8 @@ class SearchEngine(object):
        
         
         termslist=[]
-        if(SYSNONYM==False):
-            termslist.append(terms)
-        else:       
+        termslist.append(terms)        
+        if(SYSNONYM):      
             #add sysnon termlist
             for t_index,t in enumerate(terms):
                 if t!='and' and t!='or'and t!='not'and t!='('and t!=')':
