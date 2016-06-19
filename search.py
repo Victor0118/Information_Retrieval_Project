@@ -4,6 +4,7 @@ import scipy.sparse as sp
 import scipy.sparse.sparsetools as sptools
 import logging
 import synonym as sy
+import re
 from collections import defaultdict
 from token import RIGHTSHIFTEQUAL
 from Tkconstants import LEFT
@@ -43,13 +44,15 @@ class Indexable(object):
         # print stemmedwordslist
 
         lastword = ""
-        for word in metadata.split():
+        metadatas = re.findall(r"[a-zA-Z]+", metadata.lower())
+
+        for word in metadatas:
             if lastword == "":
                 lastword = word
                 continue
             self.words_count[lastword + '_' + word] += 1
             lastword = word
-        for word in metadata.split():
+        for word in metadatas:
             self.words_count[word] += 1
 
     def __repr__(self):
@@ -517,6 +520,7 @@ class SearchEngine(object):
         search_results.sort(key=lambda x: x.score, reverse=True)
         return search_results[:n_results]
 
+
     def search_bool(self,query,n_results=10):
         """return all documents that satisfy the demand given a bool expression
         Assumptions:
@@ -560,53 +564,69 @@ class SearchEngine(object):
                     terms.insert(term_index,tt[0])
                     terms.insert(term_index+1,branket)
                     terms.insert(term_index+2,tt[1])
-        newterms = []
-        if len(terms) > 1:
-            nextt = ""
-            cnt=0
-            first=1
-            for t_index,t in enumerate(terms):
-                checkSpelling(t, dictionary)
-                if t_index+1 < len(terms):
-                    nextt = terms[t_index+1]
-                else:
-                    nextt=""
-                if t!='and' and t!='or'and t!='not'and t!='('and t!=')':
-                    if nextt!='and' and nextt!='or'and nextt!='not'and nextt!='('and nextt!=')' and nextt!="":
-                        if first==0:
-                            newterms.append('and')
-                        newterms.append(t+'_'+nextt)
-                        first=0
+        termslist=[]
+        termslist.append(terms)
+        for t_index,t in enumerate(terms):
+            if t!='and' and t!='or'and t!='not'and t!='('and t!=')':
+                sysnlist=sy.synonymwords(t)
+                if len(sysnlist)!=0:
+                    for sysn in sysnlist:
+                        sysnterms=[]
+                        sysnterms.extend(terms)
+                        #print "systerms",sysnterms,"terms",terms, "....sysn:",sysn
+                        sysnterms.remove(t)
+                        sysnterms.insert(t_index,sysn)
+                        termslist.append(sysnterms)
+        docset=[]
+        for terms in termslist:
+            newterms = []
+            if len(terms) > 1:
+                nextt = ""
+                cnt=0
+                first=1
+                for t_index,t in enumerate(terms):
+
+                    if t_index+1 < len(terms):
+                        nextt = terms[t_index+1]
                     else:
-                        if(first!=0):
-                            newterms.append(t)
-                        first=1
-                        
-                        
-                else:
-                    newterms.append(t)
-            
-            terms=newterms
-                #print t_index,terms[t_index]
-        else:
-            checkSpelling(terms[0], dictionary)
-        print "debug info in search_bool:",terms
-    
-        expRoot=parser(terms).parse()
-        #docs_indiex = self.index.search_terms(term)
-        search_results = []
-        if expRoot!=None:
-            #expRoot.printout()
-            docs_indices = expRoot.calc(self.index,self.count())
-            
-            for doc_index in docs_indices:
+                        nextt=""
+                    if t!='and' and t!='or'and t!='not'and t!='('and t!=')':
+                        print  "check :",t
+                        checkSpelling(t, dictionary)
+                        if nextt!='and' and nextt!='or'and nextt!='not'and nextt!='('and nextt!=')' and nextt!="":
+                            if first==0:
+                                newterms.append('and')
+                            newterms.append(t+'_'+nextt)
+                            first=0
+                        else:
+                            if(first!=0):
+                                newterms.append(t)
+                            first=1                                               
+                    else:
+                        newterms.append(t)
+                
+                terms=newterms
+                    #print t_index,terms[t_index]
+            else:
+                print  "check :",t
+                checkSpelling(terms[0], dictionary)
+            print "debug info in search_bool:",terms
+        
+            expRoot=parser(terms).parse()
+            #docs_indiex = self.index.search_terms(term)
+            search_results = []
+            if expRoot!=None:
+                #expRoot.printout()
+                docs_indices = expRoot.calc(self.index,self.count())
+                docset=set(docs_indices)|set(docset)
+            '''for doc_index in docs_indices:
                 indexable = self.objects[doc_index]
                 doc_score = self.rank.compute_rank(doc_index, terms)
                 result = IndexableResult(doc_score, indexable)
                 search_results.append(result)
 
-            search_results.sort(key=lambda x: x.score, reverse=True)
-        return search_results[:n_results]
+            search_results.sort(key=lambda x: x.score, reverse=True)'''
+        return list(docset)[:n_results]
 
 
 

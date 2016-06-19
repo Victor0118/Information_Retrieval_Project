@@ -88,6 +88,6 @@ def searchSyn(word):
 # 		searchSyn()
 
 def synonymwords(word):
-	return searchSyn(word)
+	return searchSyn(word)[0:3]
 
 # syndictionary = loadFile()
