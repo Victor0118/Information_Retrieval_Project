@@ -70,27 +70,27 @@ def execute_search(data_location):
     docs_number = repository.words_count()
     logger.info('Done loading words, %d docs in index', docs_number)
 
-    # choice = raw_input('Please choose to search words(enter 1) or song info(enter 2) :')
 
-    # if choice == '1':
-        # while query is not '':
     print '============================================================='
     
-    query = raw_input('Enter a query, or hit enter to quit: ')
-    search_results = repository.search_words(query)
+    
 
-    print search_results
+    # print search_results
 
-    # elif choice == '2':
-    #     while query is not '':
-    #         query = raw_input('Enter a query, or hit enter to quit: ')
-    #         search_results = repository.search_info(query)
-
-    #         print search_results
-
-    # else:
-    #     print 'choice error'
-    #     exit()
+    choice = 1
+    while choice!=3:
+        choice = int(input('bool search(enter 1) or common search(enter 2) or exit(enter 3):'))
+        if choice == 1:
+            choice = 1
+        elif choice == 2:
+            choice = 2
+        elif choice == 3:
+            exit()
+        else:
+            print "input error"
+        query = raw_input('Enter a query, or hit enter to quit: ')
+        search_results = repository.search_words(query,choice)
+   
 
 
 if __name__ == '__main__':
