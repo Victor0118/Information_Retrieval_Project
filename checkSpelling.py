@@ -21,11 +21,14 @@ def editDistanceCalc(query, word):
 def checkSpelling(query, dictionary):
 	if query not in dictionary:
 		minDist = len(query)+10
+		printFlag = False
 		for word in dictionary:
 			if word[0]==query[0].lower():
+				printFlag = True
 				dist = editDistanceCalc(query, word)
 				if dist < minDist:
 					minDist = dist
 					correctedWord = word
-		print 'Did you mean '+correctedWord+' ?'
+		if(printFlag):
+			print 'Did you mean '+correctedWord+' ?'
 
