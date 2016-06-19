@@ -512,7 +512,7 @@ class SearchEngine(object):
         
         termslist=[]
 
-        print SYSNONYM
+       
 
         if(SYSNONYM==False):
             if(DEBUG):
@@ -622,7 +622,7 @@ class SearchEngine(object):
         originterms=terms
         
        
-        print SYSNONYM
+        
         termslist=[]
         if(SYSNONYM==False):
             termslist.append(terms)
