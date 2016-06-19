@@ -140,7 +140,7 @@ class wordInventory(object):
             if choice == 1:
                 result = self.engine.search_bool(query, n_results)
                 for res in result:
-                    print res.indexable.iid," ",fnames[res.indexable.iid-1]
+                    print res.iid," ",fnames[res.iid-1]
             elif choice == 2:
                 result = self.engine.search(query, n_results)
                 for res in result:
