@@ -11,7 +11,7 @@ from Tkconstants import LEFT
 from checkSpelling import checkSpelling
 
 logger = logging.getLogger(__name__)
-
+originword=set()
 
 STOP_WORDS_FILENAME = 'stop_words.txt'
 
@@ -45,15 +45,18 @@ class Indexable(object):
 
         lastword = ""
         metadatas = re.findall(r"[a-zA-Z]+", metadata.lower())
-
         for word in metadatas:
+            originword.add(word)
+            word = sy.stemming(word)
             if lastword == "":
                 lastword = word
                 continue
             self.words_count[lastword + '_' + word] += 1
             lastword = word
         for word in metadatas:
+            word = sy.stemming(word)
             self.words_count[word] += 1
+
 
     def __repr__(self):
         return '_'.join(self.words_count.keys()[:10])
@@ -495,29 +498,56 @@ class SearchEngine(object):
         terms = query.lower().split()
         # terms = sy.stemminglist(terms)
         dictionary = self.index.term_index.keys()
+        global originword
         newterms = []
         if len(terms) > 1:
             lastt = ""
             for t in terms:
-                checkSpelling(t, dictionary)
+                #checkSpelling(t, originword)
                 if lastt == "":
                     lastt = t
                     continue
                 newterms.append(lastt+'_'+t)
                 lastt = t
             terms = newterms
-        else:
-            checkSpelling(terms[0], dictionary)
-        docs_indices = self.index.search_terms(terms)
-        search_results = []
+        
+        
 
-        for doc_index in docs_indices:
+        #add sysnon termlist
+        termslist=[]
+        termslist.append(terms)
+        for t_index,t in enumerate(terms):
+            if t!='and' and t!='or'and t!='not'and t!='('and t!=')':
+                sysnlist=sy.synonymwords(t)
+                if len(sysnlist)!=0:
+                    for sysn in sysnlist:
+                        sysnterms=[]
+                        sysnterms.extend(terms)
+                        #print "systerms",sysnterms,"terms",terms, "....sysn:",sysn
+                        sysnterms.remove(t)
+                        sysnterms.insert(t_index,sysn)
+                        termslist.append(sysnterms)
+        #merge docset
+        docset=set()
+        for terms in termslist:
+            docs_indices = self.index.search_terms(terms)
+            docset=docset|set(docs_indices)
+
+
+        #calculate scores
+        search_results = []
+        for doc_index in list(docset):
             indexable = self.objects[doc_index]
             doc_score = self.rank.compute_rank(doc_index, terms)
             result = IndexableResult(doc_score, indexable)
             search_results.append(result)
-
         search_results.sort(key=lambda x: x.score, reverse=True)
+
+        #too few results: checkspelling
+        if(len(docset)<3):
+            for t_index,t in enumerate(termslist[0]):
+                print  "check :",t
+                checkSpelling(terms[0], originword)
         return search_results[:n_results]
 
 
@@ -534,6 +564,7 @@ class SearchEngine(object):
         """
         terms=query.lower().split()
         # terms = sy.stemminglist(terms)
+        global originword
         dictionary = self.index.term_index.keys()
         #dealing with branket
         for term_index,term in enumerate(terms):
@@ -564,6 +595,7 @@ class SearchEngine(object):
                     terms.insert(term_index,tt[0])
                     terms.insert(term_index+1,branket)
                     terms.insert(term_index+2,tt[1])
+        #add sysnon termlist
         termslist=[]
         termslist.append(terms)
         for t_index,t in enumerate(terms):
@@ -577,21 +609,25 @@ class SearchEngine(object):
                         sysnterms.remove(t)
                         sysnterms.insert(t_index,sysn)
                         termslist.append(sysnterms)
-        docset=[]
+        #merge docset
+        docset=set()
         for terms in termslist:
             newterms = []
             if len(terms) > 1:
                 nextt = ""
                 cnt=0
                 first=1
+
+              
                 for t_index,t in enumerate(terms):
+
                     if t_index+1 < len(terms):
                         nextt = terms[t_index+1]
                     else:
                         nextt=""
                     if t!='and' and t!='or'and t!='not'and t!='('and t!=')':
-                        print  "check :",t
-                        checkSpelling(t, dictionary)
+                        # print  "check :",t
+                        # checkSpelling(t, originword)
                         if nextt!='and' and nextt!='or'and nextt!='not'and nextt!='('and nextt!=')' and nextt!="":
                             if first==0:
                                 newterms.append('and')
@@ -606,9 +642,11 @@ class SearchEngine(object):
                 
                 terms=newterms
                     #print t_index,terms[t_index]
-            else:
-                print  "check :",terms[0]
-                checkSpelling(terms[0], dictionary)
+
+            #else:
+                # print  "check :",t
+                # checkSpelling(terms[0], originword)
+
             print "debug info in search_bool:",terms
         
             expRoot=parser(terms).parse()
@@ -617,14 +655,15 @@ class SearchEngine(object):
             if expRoot!=None:
                 #expRoot.printout()
                 docs_indices = expRoot.calc(self.index,self.count())
-                docset=set(docs_indices)|set(docset)
-            '''for doc_index in docs_indices:
-                indexable = self.objects[doc_index]
-                doc_score = self.rank.compute_rank(doc_index, terms)
-                result = IndexableResult(doc_score, indexable)
-                search_results.append(result)
+                docset=set(docs_indices)|docset
 
-            search_results.sort(key=lambda x: x.score, reverse=True)'''
+        #too few results: checkspelling
+        if(len(docset)<3):
+            for t_index,t in enumerate(terms):
+                if t!='and' and t!='or'and t!='not'and t!='('and t!=')':
+                    print  "check :",t
+                    checkSpelling(terms[0], originword)
+
         return list(docset)[:n_results]
 
 
