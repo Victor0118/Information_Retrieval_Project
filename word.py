@@ -136,7 +136,10 @@ class wordInventory(object):
         # dictionary = self.engine.index.term_index.keys()
         if len(query) > 0:
             # checkSpelling(query, dictionary)
-            result = self.engine.search_bool(query, n_results)
+            if choice == 1:
+                result = self.engine.search_bool(query, n_results)
+            elif choice == 2:
+                result = self.engine.search(query, n_results)
             # print len(list(os.walk(self.filename)))
             # print 
             parent,dirnames,fnames = list(os.walk(self.filename))[0]

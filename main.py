@@ -79,7 +79,10 @@ def execute_search(data_location):
 
     choice = 1
     while choice!=3:
-        choice = int(input('bool search(enter 1) or common search(enter 2) or exit(enter 3):'))
+        choice = raw_input('bool search(enter 1) or common search(enter 2) or exit(enter 3):')
+        if choice == '':
+             continue
+        choice = int(choice)
         if choice == 1:
             choice = 1
         elif choice == 2:
@@ -88,6 +91,7 @@ def execute_search(data_location):
             exit()
         else:
             print "input error"
+        print '============================================================='
         query = raw_input('Enter a query, or hit enter to quit: ')
         search_results = repository.search_words(query,choice)
    
