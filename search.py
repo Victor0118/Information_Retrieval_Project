@@ -515,14 +515,8 @@ class SearchEngine(object):
 
         
         termslist=[]
-
-       
-
-        if(SYSNONYM==False):
-            if(DEBUG):
-                print 'no sysnonym'
-            termslist.append(terms)
-        else:       
+        termslist.append(terms)        
+        if(SYSNONYM):       
             #add sysnon termlist
             if(DEBUG):
                 print 'add sysnonym'
@@ -533,11 +527,12 @@ class SearchEngine(object):
                         print "sysnlist",sysnlist
                     if len(sysnlist)!=0:
                         for sysn in sysnlist:
-                            sysnterms=[]+terms                       
-                            #print "systerms",sysnterms,"terms",terms, "....sysn:",sysn
-                            del(sysnterms[t_index])
-                            sysnterms.insert(t_index,sysn)
-                            termslist.append(sysnterms)
+                            if sysn!=t:
+                                sysnterms=[]+terms                       
+                                #print "systerms",sysnterms,"terms",terms, "....sysn:",sysn
+                                del(sysnterms[t_index])
+                                sysnterms.insert(t_index,sysn)
+                                termslist.append(sysnterms)
 
 
         #merge docset
@@ -628,21 +623,21 @@ class SearchEngine(object):
        
         
         termslist=[]
-        if(SYSNONYM==False):
-            termslist.append(terms)
-        else:       
+        termslist.append(terms)        
+        if(SYSNONYM):      
             #add sysnon termlist
             for t_index,t in enumerate(terms):
                 if t!='and' and t!='or'and t!='not'and t!='('and t!=')':
                     sysnlist=sy.synonymwords(t)
                     if len(sysnlist)>0:
                         for sysn in sysnlist:
-                            sysnterms=[]+terms
-                            del(sysnterms[t_index])
-                            sysnterms.insert(t_index,sysn)
-                            if(DEBUG):
-                                print "new systerms",sysnterms, "....sysn:",sysn
-                            termslist.append(sysnterms)
+                            if sysn!=t:
+                                sysnterms=[]+terms
+                                del(sysnterms[t_index])
+                                sysnterms.insert(t_index,sysn)
+                                if(DEBUG):
+                                    print "new systerms",sysnterms, "....sysn:",sysn
+                                termslist.append(sysnterms)
        
 
         #merge docset 
