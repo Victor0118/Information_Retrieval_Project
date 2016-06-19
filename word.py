@@ -79,7 +79,7 @@ class wordInventory(object):
     def __init__(self, filename):
         self.filename = filename
         self.engine = SearchEngine()
-        self.engine2 = SearchEngine()
+        # self.engine2 = SearchEngine()
 
     @timed
     def load_words(self):
@@ -116,7 +116,7 @@ class wordInventory(object):
         self.saveToFile()
 
     @timed
-    def search_words(self, query, n_results=10):
+    def search_words(self, query, n_results=10,choice=2):
         """Search words according to provided query of terms.
 
         The query is executed against the indexed words, and a list of words
