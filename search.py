@@ -585,7 +585,6 @@ class SearchEngine(object):
                 cnt=0
                 first=1
                 for t_index,t in enumerate(terms):
-
                     if t_index+1 < len(terms):
                         nextt = terms[t_index+1]
                     else:
@@ -608,7 +607,7 @@ class SearchEngine(object):
                 terms=newterms
                     #print t_index,terms[t_index]
             else:
-                print  "check :",t
+                print  "check :",terms[0]
                 checkSpelling(terms[0], dictionary)
             print "debug info in search_bool:",terms
         
