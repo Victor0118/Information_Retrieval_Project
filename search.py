@@ -205,7 +205,7 @@ class TfidfRank(object):
                 word_index_in_vocabulary = self.vocabulary[word]
                 doc_word_count = indexable.count_for_word(word)
                 ft_matrix[index, word_index_in_vocabulary] = doc_word_count
-
+        
         # Add synword's idf
 
         # for word in self.vocabulary_withoutsynword.keys():
@@ -496,7 +496,9 @@ class SearchEngine(object):
 
         """
         terms = query.lower().split()
-        # terms = sy.stemminglist(terms)
+        #add stemming
+        terms = sy.stemminglist(terms)
+        originterms=terms
         dictionary = self.index.term_index.keys()
         global originword
         newterms = []
@@ -545,9 +547,9 @@ class SearchEngine(object):
 
         #too few results: checkspelling
         if(len(docset)<3):
-            for t_index,t in enumerate(termslist[0]):
+            for t in originterms:
                 print  "check :",t
-                checkSpelling(terms[0], originword)
+                checkSpelling(t, originword)
         return search_results[:n_results]
 
 
@@ -563,7 +565,7 @@ class SearchEngine(object):
           list of  docs indexes
         """
         terms=query.lower().split()
-        # terms = sy.stemminglist(terms)
+       
         global originword
         dictionary = self.index.term_index.keys()
         #dealing with branket
@@ -595,6 +597,9 @@ class SearchEngine(object):
                     terms.insert(term_index,tt[0])
                     terms.insert(term_index+1,branket)
                     terms.insert(term_index+2,tt[1])
+        # add stemming
+        terms = sy.stemminglist(terms)
+        originterms=terms
         #add sysnon termlist
         termslist=[]
         termslist.append(terms)
@@ -659,10 +664,10 @@ class SearchEngine(object):
 
         #too few results: checkspelling
         if(len(docset)<3):
-            for t_index,t in enumerate(terms):
+            for t in originterms:
                 if t!='and' and t!='or'and t!='not'and t!='('and t!=')':
                     print  "check :",t
-                    checkSpelling(terms[0], originword)
+                    checkSpelling(t, originword)
 
         return list(docset)[:n_results]
 
