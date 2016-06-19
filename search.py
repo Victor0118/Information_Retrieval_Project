@@ -205,7 +205,7 @@ class TfidfRank(object):
                 word_index_in_vocabulary = self.vocabulary[word]
                 doc_word_count = indexable.count_for_word(word)
                 ft_matrix[index, word_index_in_vocabulary] = doc_word_count
-
+        
         # Add synword's idf
 
         # for word in self.vocabulary_withoutsynword.keys():
