@@ -9,13 +9,15 @@ from collections import defaultdict
 from token import RIGHTSHIFTEQUAL
 from Tkconstants import LEFT
 from checkSpelling import checkSpelling
-
+from boolParser import exprNode, parser
+import main
 logger = logging.getLogger(__name__)
 originword=set()
 
 STOP_WORDS_FILENAME = 'stop_words.txt'
 
-
+DEBUG=main.DEBUG
+SYSNONYM=main.SYSNONYM
 class Indexable(object):
     """Class representing an object that can be indexed.
 
@@ -419,7 +421,9 @@ class Index(object):
                 docs_indices = docs_with_term
             else:
                 docs_indices = set(docs_indices) & set(docs_with_term)
-        print "debug info in search_terms",term,":",list(docs_indices)
+
+        if(DEBUG):
+            print "debug info in search_terms",term,":",list(docs_indices)
 
         return list(docs_indices)
 
@@ -496,45 +500,62 @@ class SearchEngine(object):
 
         """
         terms = query.lower().split()
-        #add stemming
-        terms = sy.stemminglist(terms)
         originterms=terms
         dictionary = self.index.term_index.keys()
         global originword
-        newterms = []
-        if len(terms) > 1:
-            lastt = ""
-            for t in terms:
-                #checkSpelling(t, originword)
-                if lastt == "":
-                    lastt = t
-                    continue
-                newterms.append(lastt+'_'+t)
-                lastt = t
-            terms = newterms
+
+
         
         
 
-        #add sysnon termlist
+
+        
         termslist=[]
-        termslist.append(terms)
-        for t_index,t in enumerate(terms):
-            if t!='and' and t!='or'and t!='not'and t!='('and t!=')':
-                sysnlist=sy.synonymwords(t)
-                if len(sysnlist)!=0:
-                    for sysn in sysnlist:
-                        sysnterms=[]
-                        sysnterms.extend(terms)
-                        #print "systerms",sysnterms,"terms",terms, "....sysn:",sysn
-                        sysnterms.remove(t)
-                        sysnterms.insert(t_index,sysn)
-                        termslist.append(sysnterms)
+
+       
+        print SYSNONYM
+
+        if(SYSNONYM==False):
+            if(DEBUG):
+                print 'no sysnonym'
+            termslist.append(terms)
+        else:       
+            #add sysnon termlist
+            if(DEBUG):
+                print 'add sysnonym'
+            for t_index,t in enumerate(terms):
+                if t!='and' and t!='or'and t!='not'and t!='('and t!=')':
+                    sysnlist=sy.synonymwords(t)
+                    if(DEBUG):
+                        print "sysnlist",sysnlist
+                    if len(sysnlist)!=0:
+                        for sysn in sysnlist:
+                            sysnterms=[]+terms                       
+                            #print "systerms",sysnterms,"terms",terms, "....sysn:",sysn
+                            del(sysnterms[t_index])
+                            sysnterms.insert(t_index,sysn)
+                            termslist.append(sysnterms)
+
+
         #merge docset
         docset=set()
         for terms in termslist:
+            #add stemming
+            terms = sy.stemminglist(terms)
+            #add multiple words
+            newterms = []
+            if len(terms) > 1:
+                lastt = ""
+                for t in terms:
+                    #checkSpelling(t, originword)
+                    if lastt == "":
+                        lastt = t
+                        continue
+                    newterms.append(lastt+'_'+t)
+                    lastt = t
+                terms = newterms
             docs_indices = self.index.search_terms(terms)
             docset=docset|set(docs_indices)
-
 
         #calculate scores
         search_results = []
@@ -548,7 +569,8 @@ class SearchEngine(object):
         #too few results: checkspelling
         if(len(docset)<3):
             for t in originterms:
-                print  "check :",t
+                if(DEBUG):
+                    print  "check :",t
                 checkSpelling(t, originword)
         return search_results[:n_results]
 
@@ -597,33 +619,40 @@ class SearchEngine(object):
                     terms.insert(term_index,tt[0])
                     terms.insert(term_index+1,branket)
                     terms.insert(term_index+2,tt[1])
-        # add stemming
-        terms = sy.stemminglist(terms)
+       
         originterms=terms
-        #add sysnon termlist
+        
+       
+        print SYSNONYM
         termslist=[]
-        termslist.append(terms)
-        for t_index,t in enumerate(terms):
-            if t!='and' and t!='or'and t!='not'and t!='('and t!=')':
-                sysnlist=sy.synonymwords(t)
-                if len(sysnlist)!=0:
-                    for sysn in sysnlist:
-                        sysnterms=[]
-                        sysnterms.extend(terms)
-                        #print "systerms",sysnterms,"terms",terms, "....sysn:",sysn
-                        sysnterms.remove(t)
-                        sysnterms.insert(t_index,sysn)
-                        termslist.append(sysnterms)
-        #merge docset
+        if(SYSNONYM==False):
+            termslist.append(terms)
+        else:       
+            #add sysnon termlist
+            for t_index,t in enumerate(terms):
+                if t!='and' and t!='or'and t!='not'and t!='('and t!=')':
+                    sysnlist=sy.synonymwords(t)
+                    if len(sysnlist)>0:
+                        for sysn in sysnlist:
+                            sysnterms=[]+terms
+                            del(sysnterms[t_index])
+                            sysnterms.insert(t_index,sysn)
+                            if(DEBUG):
+                                print "new systerms",sysnterms, "....sysn:",sysn
+                            termslist.append(sysnterms)
+       
+
+        #merge docset 
         docset=set()
         for terms in termslist:
+            # add stemming
+            terms = sy.stemminglist(terms)
+            #add multiple words
             newterms = []
             if len(terms) > 1:
                 nextt = ""
                 cnt=0
-                first=1
-
-              
+                first=1              
                 for t_index,t in enumerate(terms):
 
                     if t_index+1 < len(terms):
@@ -631,8 +660,6 @@ class SearchEngine(object):
                     else:
                         nextt=""
                     if t!='and' and t!='or'and t!='not'and t!='('and t!=')':
-                        # print  "check :",t
-                        # checkSpelling(t, originword)
                         if nextt!='and' and nextt!='or'and nextt!='not'and nextt!='('and nextt!=')' and nextt!="":
                             if first==0:
                                 newterms.append('and')
@@ -651,8 +678,8 @@ class SearchEngine(object):
             #else:
                 # print  "check :",t
                 # checkSpelling(terms[0], originword)
-
-            print "debug info in search_bool:",terms
+            if(DEBUG):
+                print "debug info in search_bool:",terms
         
             expRoot=parser(terms).parse()
             #docs_indiex = self.index.search_terms(term)
@@ -666,7 +693,8 @@ class SearchEngine(object):
         if(len(docset)<3):
             for t in originterms:
                 if t!='and' and t!='or'and t!='not'and t!='('and t!=')':
-                    print  "check :",t
+                    if(DEBUG):
+                        print  "check :",t
                     checkSpelling(t, originword)
 
         return list(docset)[:n_results]
@@ -680,116 +708,3 @@ class SearchEngine(object):
           int: Number of documents indexed.
         """
         return len(self.objects)
-depth=0
-class exprNode(object):
-    '''Class of bool expression tree'''
-    def __init__(self,value):
-        self.op_value=value
-        self.leftchild=None
-        self.rightchild=None
-    def linkNode(self,left,right):
-        self.leftchild=left
-        self.rightchild=right
-        return self
-    def printout(self):
-        global depth
-        leftnode=self.leftchild
-        rightnode=self.rightchild
-        if leftnode!=None:
-            depth=depth-1
-            leftnode.printout()
-            depth=depth+1
-        print self.op_value,depth
-        if rightnode!=None:
-            depth=depth-1
-            rightnode.printout()
-            depth=depth+1
-
-        #if leftres==None and rightres==None:
-        #    print self.op_value,depth
-    def calc(self,index,docs_num):
-    # '''calculate the docs indexes according to bool expression tree'''
-        leftnode=self.leftchild
-        rightnode=self.rightchild
-        if self.op_value=='and':
-
-            leftdocs_indices=self.leftchild.calc(index,docs_num)
-            rightdocs_indices=self.rightchild.calc(index,docs_num)
-            res=set(leftdocs_indices) & set(rightdocs_indices)
-
-            return list(res)
-        elif self.op_value=='or':
-            leftdocs_indices=self.leftchild.calc(index,docs_num)
-            rightdocs_indices=self.rightchild.calc(index,docs_num)
-            res=set(leftdocs_indices)| set(rightdocs_indices)
-            return list(res)
-        elif self.op_value=='not':
-            leftdocs_indices=range(docs_num)
-            rightdocs_indices=self.rightchild.calc(index,docs_num)
-            res=set(leftdocs_indices)- set(rightdocs_indices)
-
-            return list(res)
-        else:
-            res=index.search_terms(self.op_value.split())
-            #print "debug info:",self.op_value.split(),res
-            return res
-class parser(object):
-    '''parse bool expression'''
-    def __init__(self,terms):
-        self.terms=terms
-        self.i=0
-        self.token=self.terms[self.i]
-    def parse(self):
-        return self.exp()
-    def match(self,expectedToken):
-        #token=self.terms[self.i]
-        if self.token==expectedToken:           
-            res= exprNode( self.token)
-        else:           
-            print 'systax error error',token
-            res=None
-        self.i=self.i+1
-        if(self.i<len(self.terms)):
-            self.token=self.terms[self.i]
-        return res
-    def factor(self):
-        if(self.token=='not'):
-            op=self.match('not')
-            right=self.negation()
-            return op.linkNode(None, right)
-        else:
-            return self.negation()
-    def negation(self):
-        if(self.token=='('):
-            self.match('(')
-            exp=self.exp()
-            self.match(')')
-            return exp
-        else:
-            return self.words()
-    def words(self):
-        tokenlist=[]
-        if(self.token!='(' and self.token !=')' and self.token !='and' and self.token != 'or' and self.token!='not'):
-            '''for single word'''
-            return self.match(self.token)#one words
-        else:
-            print "syntax error",self.token
-            return ""
-            '''for multiple words query
-            tokenlist.append(self.token)
-            self.match(self.token)
-        return exprNode(tokenlist)'''
-    def term(self):
-        left=self.factor()
-        while self.token=='and':
-            op=self.match('and' )
-            right=self.factor()
-            left=op.linkNode(left, right)
-        return left
-    def exp(self):
-        left=self.term()
-        while(self.token=='or'):
-            op=self.match('or')
-            right=self.term()
-            left=op.linkNode(left, right)
-        return left

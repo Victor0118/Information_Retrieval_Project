@@ -41,7 +41,7 @@ sys.path.append('./Reuters')
 import word
 
 DEBUG = True
-
+SYSNONYM =False
 # Log initialization
 log_level = logging.DEBUG if DEBUG else logging.INFO
 log_format = '%(asctime)s - %(levelname)s - %(module)s : %(lineno)d - %(message)s'
@@ -50,7 +50,12 @@ logger = logging.getLogger(__name__)
 
 CATALOG_FILENAME = 'Reuters'
 
+def getGlobalVal():
+    global SYSNONYM
+    print SYSNONYM
+    return SYSNONYM
 
+    
 def execute_search(data_location):
     """Capture query from STDIN and display the result on STDOUT.
 
@@ -76,17 +81,36 @@ def execute_search(data_location):
     
 
     # print search_results
-
+    
     choice = 1
     while choice!=3:
         choice = raw_input('bool search(enter 1) or common search(enter 2) or exit(enter 3):')
         if choice == '':
              continue
         choice = int(choice)
+        global SYSNONYM
         if choice == 1:
-            choice = 1
+            choice=raw_input('Do you want to add sysnonym search?(y/n)')
+            if(choice=='y' or choice=='Y'):
+                SYSNONYM=True
+                print "You have chosen sysnonym search"
+            elif(choice=='n'or choice=='N'):
+                SYSNONYM=False
+                print "You have canceled sysnonym search"
+            else:
+                SYSNONYM=False
+                print "input error. default: no sysnonym search"          
         elif choice == 2:
-            choice = 2
+            choice=raw_input('Do you want to add sysnonym search?(y/n)')
+            if(choice=='y' or choice=='Y'):
+                SYSNONYM=True
+                print "You have chosen sysnonym search"
+            elif(choice=='n'or choice=='N'):
+                SYSNONYM=False
+                print "You have canceled sysnonym search"
+            else:
+                SYSNONYM=False
+                print "input error. default: no sysnonym search"   
         elif choice == 3:
             exit()
         else:
