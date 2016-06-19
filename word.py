@@ -136,15 +136,19 @@ class wordInventory(object):
         # dictionary = self.engine.index.term_index.keys()
         if len(query) > 0:
             # checkSpelling(query, dictionary)
+            parent,dirnames,fnames = list(os.walk(self.filename))[0]
             if choice == 1:
                 result = self.engine.search_bool(query, n_results)
+                for res in result:
+                    print res.indexable.iid," ",fnames[res.indexable.iid-1]
             elif choice == 2:
                 result = self.engine.search(query, n_results)
+                for res in result:
+                    print res.indexable.iid," ",fnames[res.indexable.iid-1]," ",res.score
             # print len(list(os.walk(self.filename)))
             # print 
-            parent,dirnames,fnames = list(os.walk(self.filename))[0]
-            for res in result:
-                print res.indexable.iid," ",fnames[res.indexable.iid-1]," ",res.score
+            
+            
 
         if len(result) > 0:
             # return '\n'.join([str(indexable) for indexable in result])
