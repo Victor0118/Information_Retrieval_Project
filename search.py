@@ -47,6 +47,8 @@ class Indexable(object):
 
         lastword = ""
         metadatas = re.findall(r"[a-zA-Z]+", metadata.lower())
+        # metadatas = sy.markDelete(metadatas)
+        # print metadatas
         for word in metadatas:
             originword.add(word)
             word = sy.stemming(word)
@@ -314,6 +316,8 @@ class TfidfRank(object):
         score = 0
         for term in terms:
             if term in self.stop_words:
+                continue
+            if term not in self.vocabulary.keys():
                 continue
             term_index = self.vocabulary[term]
             score += self.tf_idf_matrix[doc_index, term_index]

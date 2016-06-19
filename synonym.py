@@ -21,9 +21,9 @@ def stemminglist(wordlist):
 		wordliststem.append(wordstem)
 	return wordliststem
 
-def markDelete(wordsString):
+def markDelete(wordsList):
 	resultwordlist = list()
-	for word in wordsString.split():
+	for word in wordsList:
 		fixword = word.replace(',','')
 		# fixword = fixword.replace('.','')
     		if fixword[-1] == '.':
