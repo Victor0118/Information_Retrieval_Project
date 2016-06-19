@@ -22,7 +22,7 @@ def checkSpelling(query, dictionary):
 	if query not in dictionary:
 		minDist = len(query)+10
 		for word in dictionary:
-			if word[0]==query[0]:
+			if word[0]==query[0].lower():
 				dist = editDistanceCalc(query, word)
 				if dist < minDist:
 					minDist = dist
