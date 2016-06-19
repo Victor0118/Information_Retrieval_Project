@@ -523,11 +523,12 @@ class SearchEngine(object):
                         print "sysnlist",sysnlist
                     if len(sysnlist)!=0:
                         for sysn in sysnlist:
-                            sysnterms=[]+terms                       
-                            #print "systerms",sysnterms,"terms",terms, "....sysn:",sysn
-                            del(sysnterms[t_index])
-                            sysnterms.insert(t_index,sysn)
-                            termslist.append(sysnterms)
+                            if sysn!=t:
+                                sysnterms=[]+terms                       
+                                #print "systerms",sysnterms,"terms",terms, "....sysn:",sysn
+                                del(sysnterms[t_index])
+                                sysnterms.insert(t_index,sysn)
+                                termslist.append(sysnterms)
 
 
         #merge docset
@@ -626,12 +627,13 @@ class SearchEngine(object):
                     sysnlist=sy.synonymwords(t)
                     if len(sysnlist)>0:
                         for sysn in sysnlist:
-                            sysnterms=[]+terms
-                            del(sysnterms[t_index])
-                            sysnterms.insert(t_index,sysn)
-                            if(DEBUG):
-                                print "new systerms",sysnterms, "....sysn:",sysn
-                            termslist.append(sysnterms)
+                            if sysn!=t:
+                                sysnterms=[]+terms
+                                del(sysnterms[t_index])
+                                sysnterms.insert(t_index,sysn)
+                                if(DEBUG):
+                                    print "new systerms",sysnterms, "....sysn:",sysn
+                                termslist.append(sysnterms)
        
 
         #merge docset 
