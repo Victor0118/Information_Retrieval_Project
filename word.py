@@ -94,7 +94,7 @@ class wordInventory(object):
         iid =  1
         for parent,dirnames,fnames in os.walk(self.filename):
                 for fname in fnames:
-                    fname2 = './Reuters2/' + fname
+                    fname2 = './Reuters/' + fname
                     # print fname
                     word = open(fname2).read()
                     # temp = fname.rstrip('.html').split('-')

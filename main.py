@@ -37,7 +37,7 @@ Example:
 import sys
 import optparse
 import logging
-sys.path.append('./Reuters2')
+
 import word
 
 DEBUG = True
@@ -48,8 +48,8 @@ log_format = '%(asctime)s - %(levelname)s - %(module)s : %(lineno)d - %(message)
 logging.basicConfig(level=log_level, format=log_format)
 logger = logging.getLogger(__name__)
 
-CATALOG_FILENAME = 'Reuters2'
-
+CATALOG_FILENAME = 'Reuters'
+sys.path.append('./'+CATALOG_FILENAME)
 
     
 def execute_search(data_location):

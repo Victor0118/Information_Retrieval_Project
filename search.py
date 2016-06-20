@@ -421,8 +421,7 @@ class Index(object):
             # there is room for improvements in this part of the code
             docs_with_term = self.term_index[term]
             #print docs_with_term
-            if term_index-num_stop_word == 0
-        return list(docs_indices):
+            if term_index-num_stop_word == 0:
                 docs_indices = docs_with_term
             else:
                 docs_indices = set(docs_indices) & set(docs_with_term)
@@ -430,6 +429,7 @@ class Index(object):
         if(DEBUG):
             print "debug info in search_terms",term,":",list(docs_indices)
 
+        return list(docs_indices)
 
 
 class SearchEngine(object):
@@ -555,6 +555,7 @@ class SearchEngine(object):
             docs_indices = self.index.search_terms(terms)
             docset=docset|set(docs_indices)
 
+
         #if too few documents returned, add original words
         if len(docset)<20:
             for terms in termslist:
@@ -564,13 +565,14 @@ class SearchEngine(object):
                 docset=docset|set(docs_indices)
 
         #if too few documents returned, add single word
-        if len(docset)<10:
+        if len(docset)<=10:
             for terms in termslist:
                 #add stemming
                 terms = sy.stemminglist(terms)
                 for t in terms:
                     docs_indices= self.index.search_terms(t.split())
                     docset=docset|set(docs_indices)
+
 
         #calculate scores
         search_results = []
