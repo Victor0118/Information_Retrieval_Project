@@ -75,7 +75,15 @@ def execute_search(data_location):
     isFromFile = True
     if choice == 2:
          isFromFile = False
-    repository.init_engine(isFromFile)
+
+    print '============================================================='
+    choice = int(raw_input('binary word(enter 1) or not(enter 2):'))
+    
+    isBinaryWord = True
+    if choice == 2:
+         isBinaryWord = False
+
+    repository.init_engine(isFromFile,isBinaryWord)
     docs_number = repository.words_count()
     logger.info('Done loading words, %d docs in index', docs_number)
 
@@ -123,6 +131,7 @@ def execute_search(data_location):
         query = raw_input('Enter a query, or hit enter to quit: ')
         
         search_results = repository.search_words(query,choice = choice,SYSNONYM=SYSNONYM)
+        print '============================================================='
    
 
 

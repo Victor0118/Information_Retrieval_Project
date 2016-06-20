@@ -28,8 +28,8 @@ class Word(Indexable):
         """
 
     # def __init__(self, iid, title, singer, word):
-    def __init__(self, iid, word):
-        Indexable.__init__(self, iid, word)
+    def __init__(self, iid, word,isBinaryWord):
+        Indexable.__init__(self, iid, word,isBinaryWord)
         # self.title = title
         # self.singer = singer
         self.word = word
@@ -82,7 +82,7 @@ class wordInventory(object):
         # self.engine2 = SearchEngine()
 
     @timed
-    def init_engine(self,isFromFile = True):
+    def init_engine(self,isFromFile = True, isBinaryWord = False):
         """Load words from a file name.
 
         This method leverages the iterable behavior of File objects
@@ -90,8 +90,9 @@ class wordInventory(object):
         effectively large files.
 
         """
+        # print isFromFile
         if isFromFile:
-            self.loadFromeFile()
+            self.loadFromeFile(isBinaryWord)
         else:            
             logger.info('Loading words from file...')
             iid =  1
@@ -108,15 +109,15 @@ class wordInventory(object):
                         # metadata = singer + ' ' + title
 
                         # wordobject = Word(iid, title, singer,word)
-                        wordobject = Word(iid, word)
+                        wordobject = Word(iid, word,isBinaryWord)
                         # songobject  = SongInfo(iid,title,singer,metadata)
                         self.engine.add_object(wordobject)
                         # self.engine2.add_object(songobject)
                         iid+=1
 
-            self.engine.start()
+            self.engine.start(isBinaryWord)
             # self.engine2.start()
-            self.saveToFile()
+            self.saveToFile(isBinaryWord)
 
     @timed
     def search_words(self, query, n_results=10,choice=2,SYSNONYM=False):
@@ -143,11 +144,11 @@ class wordInventory(object):
             if choice == 1:
                 result = self.engine.search_bool(query, n_results,SYSNONYM)
                 for res in result:
-                    print res," ",fnames[res-1]
+                    print res," ",fnames[res]
             elif choice == 2:
                 result = self.engine.search(query, n_results,SYSNONYM)
                 for res in result:
-                    print res.indexable.iid," ",fnames[res.indexable.iid-1]," ",res.score
+                    print res.indexable.iid-1," ",fnames[res.indexable.iid-1]," ",res.score
             # print len(list(os.walk(self.filename)))
             # print 
             
@@ -183,13 +184,20 @@ class wordInventory(object):
     #     return self._NO_RESULTS_MESSAGE
 
 
-    def saveToFile(self):
-        fileObject = open('test.engine','w')
+    def saveToFile(self,isBinaryWord):
+        if isBinaryWord:
+            fileObject = open('test.engine','w')
+        else:
+            fileObject = open('test_noBinary.engine','w')
         pickle.dump(self.engine, fileObject)
 
     # @timed
-    def loadFromeFile(self):
-        fileObject = open('test.engine','r')
+    def loadFromeFile(self,isBinaryWord=False):
+        # print isBinaryWord
+        if isBinaryWord:
+            fileObject = open('test.engine','r')
+        else:
+            fileObject = open('test_noBinary.engine','r')
         self.engine = pickle.load(fileObject)
 
 

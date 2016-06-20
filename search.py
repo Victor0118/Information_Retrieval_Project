@@ -35,7 +35,7 @@ class Indexable(object):
 
     """
 
-    def __init__(self, iid, metadata):
+    def __init__(self, iid, metadata,isBinaryWord=False ):
         self.iid = iid
         self.words_count = defaultdict(int)
 
@@ -49,14 +49,18 @@ class Indexable(object):
         metadatas = re.findall(r"[a-zA-Z]+", metadata.lower())
         # metadatas = sy.markDelete(metadatas)
         # print metadatas
-        for word in metadatas:
-            originword.add(word)
-            word = sy.stemming(word)
-            if lastword == "":
+
+        if isBinaryWord:
+            for word in metadatas:
+                originword.add(word)
+                word = sy.stemming(word)
+                if lastword == "":
+                    lastword = word
+                    continue
+                self.words_count[lastword + '_' + word] += 1
                 lastword = word
-                continue
-            self.words_count[lastword + '_' + word] += 1
-            lastword = word
+        
+
         for word in metadatas:
             word = sy.stemming(word)
             self.words_count[word] += 1
@@ -180,7 +184,7 @@ class TfidfRank(object):
         self.ifd_diag_matrix = []
         self.tf_idf_matrix = []
 
-    def build_rank(self, objects):
+    def build_rank(self, objects,isBinaryWord=False):
         """Build tf-idf ranking score for terms in the corpus.
 
         Note:
@@ -194,7 +198,7 @@ class TfidfRank(object):
             considered during tf-idf score computation.
 
         """
-        self.__build_vocabulary(objects)
+        self.__build_vocabulary(objects,isBinaryWord)
 
         n_terms = len(self.vocabulary)
         n_docs = len(objects)
@@ -255,7 +259,7 @@ class TfidfRank(object):
                                       self.tf_idf_matrix.indices,
                                       self.tf_idf_matrix.data, norm)
 
-    def __build_vocabulary(self, objects):
+    def __build_vocabulary(self, objects,isBinaryWord=False):
         """Build vocabulary with indexable objects.
 
         Args:
@@ -264,20 +268,23 @@ class TfidfRank(object):
 
         """
         vocabulary_index = 0
-        for obj in objects:
-            position = obj.iid
-            word = obj.word
-            lastw = ""
-            for w in word.split():
-                if lastw == "":
+        if isBinaryWord:
+            for obj in objects:
+                position = obj.iid
+                word = obj.word
+                lastw = ""
+                for w in word.split():
+                    if lastw == "":
+                        lastw = w
+                        continue
+                    if lastw + '_' + w in self.vocabulary:
+                        continue
+                    self.vocabulary[lastw + '_' + w] = vocabulary_index
+                    vocabulary_index += 1
                     lastw = w
-                    continue
-                if lastw + '_' + w in self.vocabulary:
-                    continue
-                self.vocabulary[lastw + '_' + w] = vocabulary_index
-                vocabulary_index += 1
-                lastw = w
-
+        
+        print self.vocabulary
+        
         for indexable in objects:
             for word in indexable.words_generator(self.stop_words):
                 if word not in self.vocabulary:
@@ -470,7 +477,7 @@ class SearchEngine(object):
         # print indexable
         self.objects.append(indexable)
 
-    def start(self):
+    def start(self,isBinaryWord=False):
         """Perform search engine initialization.
 
         The current implementation initialize the ranking and indexing of
@@ -480,7 +487,7 @@ class SearchEngine(object):
         """
         logger.info('Start search engine (Indexing | Ranking)...')
         self.index.build_index(self.objects)
-        self.rank.build_rank(self.objects)
+        self.rank.build_rank(self.objects,isBinaryWord)
 
     def search(self, query, n_results=10,SYSNONYM=False):
         """Return indexed documents given a query of terms.
@@ -557,7 +564,7 @@ class SearchEngine(object):
 
 
         #if too few documents returned, add original words
-        if len(docset)<20:
+        if len(docset)<n_results:
             for terms in termslist:
                 #add stemming
                 terms = sy.stemminglist(terms)
@@ -565,7 +572,7 @@ class SearchEngine(object):
                 docset=docset|set(docs_indices)
 
         #if too few documents returned, add single word
-        if len(docset)<=10:
+        if len(docset)<n_results:
             for terms in termslist:
                 #add stemming
                 terms = sy.stemminglist(terms)
