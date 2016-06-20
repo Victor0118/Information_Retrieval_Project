@@ -82,7 +82,7 @@ class wordInventory(object):
         # self.engine2 = SearchEngine()
 
     @timed
-    def load_words(self):
+    def init_engine(self,isFromFile = True):
         """Load words from a file name.
 
         This method leverages the iterable behavior of File objects
@@ -90,30 +90,33 @@ class wordInventory(object):
         effectively large files.
 
         """
-        logger.info('Loading words from file...')
-        iid =  1
-        for parent,dirnames,fnames in os.walk(self.filename):
-                for fname in fnames:
-                    fname2 = './Reuters/' + fname
-                    # print fname
-                    word = open(fname2).read()
-                    # temp = fname.rstrip('.html').split('-')
-                    # if len(temp)<=1:
-                        # continue
-                    # singer = temp[0]
-                    # title = temp[1]
-                    # metadata = singer + ' ' + title
+        if isFromFile:
+            self.loadFromeFile()
+        else:            
+            logger.info('Loading words from file...')
+            iid =  1
+            for parent,dirnames,fnames in os.walk(self.filename):
+                    for fname in fnames:
+                        fname2 = './Reuters/' + fname
+                        # print fname
+                        word = open(fname2).read()
+                        # temp = fname.rstrip('.html').split('-')
+                        # if len(temp)<=1:
+                            # continue
+                        # singer = temp[0]
+                        # title = temp[1]
+                        # metadata = singer + ' ' + title
 
-                    # wordobject = Word(iid, title, singer,word)
-                    wordobject = Word(iid, word)
-                    # songobject  = SongInfo(iid,title,singer,metadata)
-                    self.engine.add_object(wordobject)
-                    # self.engine2.add_object(songobject)
-                    iid+=1
+                        # wordobject = Word(iid, title, singer,word)
+                        wordobject = Word(iid, word)
+                        # songobject  = SongInfo(iid,title,singer,metadata)
+                        self.engine.add_object(wordobject)
+                        # self.engine2.add_object(songobject)
+                        iid+=1
 
-        self.engine.start()
-        # self.engine2.start()
-        self.saveToFile()
+            self.engine.start()
+            # self.engine2.start()
+            self.saveToFile()
 
     @timed
     def search_words(self, query, n_results=10,choice=2,SYSNONYM=False):
@@ -184,6 +187,10 @@ class wordInventory(object):
         fileObject = open('test.engine','w')
         pickle.dump(self.engine, fileObject)
 
+    # @timed
+    def loadFromeFile(self):
+        fileObject = open('test.engine','r')
+        self.engine = pickle.load(fileObject)
 
 
     def words_count(self):

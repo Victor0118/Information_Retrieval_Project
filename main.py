@@ -65,9 +65,17 @@ def execute_search(data_location):
     """
     query = None
     repository = word.wordInventory(data_location)
+    
+
     logger.info('Loading...')
 
-    repository.load_words()
+    print '============================================================='
+    choice = int(raw_input('loading from file(enter 1) or compute now(enter 2):'))
+    
+    isFromFile = True
+    if choice == 2:
+         isFromFile = False
+    repository.init_engine(isFromFile)
     docs_number = repository.words_count()
     logger.info('Done loading words, %d docs in index', docs_number)
 
