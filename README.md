@@ -1,1 +1,1 @@
-# Information_Retrieval_Project
+# Information Retrieval Project in Zhejiang University
